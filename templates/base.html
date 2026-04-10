@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de gestión de pedidos - CRUD Django con clientes, productos y pedidos.">
+    <title>{% block title %}GestiónPedidos{% endblock %} | Sistema de Gestión</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0056b3;
+            --primary-light: #007bff;
+            --accent: #0056b3;
+            --sidebar-width: 250px;
+            --bg-body: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            margin: 0;
+        }
+
+        /* ===== SIDEBAR SENCILLO ===== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #ffffff;
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-brand {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: #ffffff;
+            text-align: left;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .sidebar-brand .badge-version {
+            font-size: 0.7rem;
+            background: #e9ecef;
+            color: var(--text-dark);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 15px 20px 5px;
+        }
+
+        .sidebar-nav .nav-link {
+            color: var(--text-dark);
+            padding: 10px 20px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .sidebar-nav .nav-link:hover {
+            background-color: #e9ecef;
+        }
+
+        .sidebar-nav .nav-link.active {
+            color: white;
+            background-color: var(--primary-light);
+            font-weight: bold;
+        }
+
+        /* ===== CONTENIDO PRINCIPAL ===== */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar .page-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .topbar .page-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .page-content { padding: 20px; flex: 1; } /* Contenido de la página */
+
+        /* ===== TARJETAS ===== */
+        .card-glass {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* ===== ESTADÍSTICAS DASHBOARD ===== */
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .stat-icon { font-size: 2rem; color: var(--primary-light); }
+        .stat-value { font-size: 1.8rem; font-weight: bold; }
+        .stat-label { color: var(--text-muted); }
+
+        /* ===== TABLAS (Anulando oscuro) ===== */
+        .table-dark-custom {
+            width: 100%;
+            background: #ffffff;
+            color: var(--text-dark);
+        }
+        .table-dark-custom thead th {
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--border-color);
+            padding: 10px;
+        }
+        .table-dark-custom td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        .table-dark-custom tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        /* ===== BOTONES ===== */
+        .btn-primary-custom {
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .btn-primary-custom:hover { background-color: var(--primary); color: white; }
+
+        .btn-action {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            cursor: pointer;
+        }
+        .btn-action:hover { background: #f8f9fa; }
+        .btn-view { color: #0dcaf0; }
+        .btn-edit { color: #ffc107; }
+        .btn-delete { color: #dc3545; }
+
+        /* ===== FORMULARIOS ===== */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .search-bar input {
+            border: none;
+            outline: none;
+            background: transparent;
+            margin-left: 5px;
+            width: 100%;
+            color: var(--text-dark);
+        }
+        .form-control, .form-select {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark) !important;
+        }
+
+        /* ===== ETIQUETAS ESTADO ===== */
+        .badge-estado {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .badge-Pendiente { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .badge-Enviado   { background: #cce5ff; color: #004085; border: 1px solid #b8daff; }
+        .badge-Entregado { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <h2><i class="bi bi-box-seam-fill me-2"></i>GestiónPedidos <span class="badge-version">v2.0</span></h2>
+        <div style="font-size:0.72rem; color: rgba(255,255,255,0.6); margin-top: 4px;">Sistema de Gestión CRUD</div>
+    </div>
+
+    <div class="sidebar-section-title">Menú Principal</div>
+    <ul class="sidebar-nav nav flex-column">
+        <li class="nav-item">
+            <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-grid-fill"></i> Menú Principal
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-section-title">Entidades</div>
+    <ul class="sidebar-nav nav flex-column">
+        <li class="nav-item">
+            <a href="{% url 'pedido_list' %}" class="nav-link {% if 'pedido' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-cart3"></i> Pedidos
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'cliente_list' %}" class="nav-link {% if 'cliente' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-people-fill"></i> Clientes
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'producto_list' %}" class="nav-link {% if 'producto' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-box-seam"></i> Productos
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-section-title">Exportar</div>
+    <ul class="sidebar-nav nav flex-column">
+        <li class="nav-item">
+            <a href="{% url 'export_pedidos_pdf' %}" class="nav-link">
+                <i class="bi bi-file-earmark-pdf-fill" style="color:#e74c3c;"></i> Pedidos PDF
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'export_pedidos_excel' %}" class="nav-link">
+                <i class="bi bi-file-earmark-excel-fill" style="color:#27ae60;"></i> Pedidos Excel
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'export_clientes_excel' %}" class="nav-link">
+                <i class="bi bi-people-fill" style="color:#27ae60;"></i> Clientes Excel
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{% url 'export_productos_excel' %}" class="nav-link">
+                <i class="bi bi-box-seam" style="color:#27ae60;"></i> Productos Excel
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-section-title">Admin</div>
+    <ul class="sidebar-nav nav flex-column mb-3">
+        <li class="nav-item">
+            <a href="/admin/" class="nav-link">
+                <i class="bi bi-shield-lock-fill"></i> Panel Admin
+            </a>
+        </li>
+        
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+            <span class="nav-link text-muted small" style="cursor: default;">
+                <i class="bi bi-person-fill"></i> Hola, {{ user.username }}
+            </span>
+        </li>
+        <li class="nav-item mt-2">
+            <form method="post" action="{% url 'logout' %}" class="px-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger w-100 btn-sm text-start">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                </button>
+            </form>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<!-- todo esto es el contenido principal de la pagina -->
+<div class="main-content">
+    <!-- BARRA SUPERIOR (TOPBAR) -->
+    <div class="topbar">
+        <div>
+            <button class="btn btn-sm me-3 d-lg-none" onclick="toggleSidebar()" style="background:none; border: 1px solid var(--border-color); color: white; border-radius:8px;">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="d-inline-block">
+                <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
+                <div class="page-subtitle">{% block page_subtitle %}Sistema de Gestión de Pedidos{% endblock %}</div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span style="font-size:0.75rem; color: var(--text-muted);">
+                <i class="bi bi-calendar3 me-1"></i>
+                <span id="current-date"></span>
+            </span>
+            <div style="width:36px; height:36px; background: var(--primary); color: white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.1rem;">
+                {% if user.is_authenticated %}{{ user.username|slice:":1"|upper }}{% else %}?{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENIDO DE LA PÁGINA -->
+    <div class="page-content fade-in">
+
+        <!-- MENSAJES DE DJANGO -->
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert alert-custom alert-{{ message.tags }} alert-dismissible fade show" role="alert"
+                 style="background: rgba({% if message.tags == 'success' %}39,174,96{% elif message.tags == 'danger' %}231,76,60{% elif message.tags == 'warning' %}243,156,18{% else %}52,152,219{% endif %}, 0.15); border: 1px solid rgba({% if message.tags == 'success' %}39,174,96{% elif message.tags == 'danger' %}231,76,60{% elif message.tags == 'warning' %}243,156,18{% else %}52,152,219{% endif %}, 0.4); color: var(--text-light);">
+                {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill" style="color:#27ae60;"></i>
+                {% elif message.tags == 'danger' %}<i class="bi bi-x-circle-fill" style="color:#e74c3c;"></i>
+                {% elif message.tags == 'warning' %}<i class="bi bi-exclamation-triangle-fill" style="color:#f39c12;"></i>
+                {% else %}<i class="bi bi-info-circle-fill" style="color:#3498db;"></i>{% endif %}
+                {{ message }}
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <!-- Contenido dinámico de cada página -->
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Mostrar fecha actual en el topbar
+    const dateEl = document.getElementById('current-date');
+    if (dateEl) {
+        const now = new Date();
+        dateEl.textContent = now.toLocaleDateString('es-CO', {
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+        });
+    }
+
+    // Toggle sidebar en móvil
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('show');
+    }
+
+    // Configuración global de SweetAlert2 sencilla
+    const SwalConfig = {
+        background: '#ffffff',
+        color: '#212529',
+        confirmButtonColor: '#007bff',
+        cancelButtonColor: '#6c757d',
+        customClass: {
+            confirmButton: 'btn btn-primary',
+            cancelButton: 'btn btn-secondary',
+        }
+    };
+
+    // Función global para confirmar eliminación con SweetAlert2
+    function confirmarEliminar(formId, nombre) {
+        Swal.fire({
+            ...SwalConfig,
+            title: '¿Eliminar registro?',
+            html: `¿Estás seguro de que deseas eliminar <strong>${nombre}</strong>?<br><small class="text-warning">Esta acción no se puede deshacer.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: '<i class="bi bi-trash3-fill me-1"></i> Sí, eliminar',
+            cancelButtonText: '<i class="bi bi-x-circle me-1"></i> Cancelar',
+            confirmButtonColor: '#e74c3c',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(formId).submit();
+            }
+        });
+    }
+
+    // Función para confirmar edición
+    function confirmarEditar(url, nombre) {
+        Swal.fire({
+            ...SwalConfig,
+            title: '¿Editar registro?',
+            html: `Vas a editar <strong>${nombre}</strong>.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: '<i class="bi bi-pencil-fill me-1"></i> Sí, editar',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
+
+    // Auto-ocultar alertas después de 5s
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(el => {
+            const bsAlert = bootstrap.Alert.getOrCreateInstance(el);
+            bsAlert.close();
+        });
+    }, 5000);
+</script>
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- ===== ALERTA DE SESIÓN EXPIRADA (CON BARRA DE PROGRESO) ===== -->
+    <div id="session-warning" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; backdrop-filter: blur(5px); display: none; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="background: #fff; color: #212529; padding: 35px; border-radius: 16px; text-align: center; max-width: 420px; box-shadow: 0 15px 50px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);">
+            <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3.5rem; opacity: 0.9;"></i>
+            <h4 class="fw-bold mt-3" style="letter-spacing: -0.5px;">Tu sesión va a expirar</h4>
+            <p class="text-muted small">Por seguridad, la conexión se cerrará automáticamente.</p>
+            
+            <!-- Barra de progreso personalizada -->
+            <div style="width: 100%; height: 12px; background: #eee; border-radius: 50px; margin: 25px 0 10px; overflow: hidden; border: 1px solid #ddd;">
+                <div id="session-progress-bar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #007bff, #00d2ff); transition: width 0.1s linear, background-color 0.5s;"></div>
+            </div>
+            <div id="session-timer-text" class="fw-bold text-danger mb-4" style="font-size: 0.9rem;">Te quedan 10 segundos</div>
+
+            <div class="d-grid gap-2">
+                <button onclick="location.reload()" class="btn btn-primary btn-lg shadow-sm" style="border-radius: 8px; font-weight: 600;">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Seguir trabajando
+                </button>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link text-muted text-decoration-none small mt-2">Abandonar sesión ahora</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración basada en tus 30 segundos de sesión
+        const SESSION_TOTAL = 30; 
+        const WARNING_START = 10; // Segundos finales para mostrar el aviso
+        
+        let secondsLeft = SESSION_TOTAL;
+        let isActive = false;
+
+        const timerLoop = setInterval(() => {
+            secondsLeft--;
+
+            // Activar aviso
+            if (secondsLeft <= WARNING_START && !isActive) {
+                isActive = true;
+                document.getElementById('session-warning').style.display = 'flex';
+            }
+
+            // Actualizar barra y texto si el aviso está activo
+            if (isActive) {
+                const bar = document.getElementById('session-progress-bar');
+                const text = document.getElementById('session-timer-text');
+                
+                // Calcular porcentaje (de 100% a 0%)
+                const percentage = (secondsLeft / WARNING_START) * 100;
+                bar.style.width = percentage + "%";
+                text.textContent = `Te quedan ${secondsLeft} segundos`;
+
+                // Cambiar color a rojo cuando falte poco
+                if (secondsLeft <= 5) {
+                    bar.style.background = "linear-gradient(90deg, #dc3545, #ff4d4d)";
+                }
+            }
+
+            // Logout final
+            if (secondsLeft <= 0) {
+                clearInterval(timerLoop);
+                window.location.href = "{% url 'logout' %}";
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

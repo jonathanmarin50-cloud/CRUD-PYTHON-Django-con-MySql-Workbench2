@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Cliente: {{ cliente.nombre }}{% endblock %}
+{% block page_title %}Detalle del Cliente{% endblock %}
+{% block page_subtitle %}{{ cliente.nombre }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'cliente_list' %}">Clientes</a></li>
+        <li class="breadcrumb-item active">{{ cliente.nombre }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <!-- INFO DEL CLIENTE -->
+    <div class="col-md-4">
+        <div class="card-glass h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-person-circle" style="color: var(--accent);"></i>
+                <h6 class="mb-0 fw-bold">Información del Cliente</h6>
+            </div>
+            <div class="card-body p-4">
+                <!-- Avatar -->
+                <div class="text-center mb-4">
+                    <div style="width:80px; height:80px; border-radius:50%; background: linear-gradient(135deg, var(--accent), var(--primary-light)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:2rem; margin:0 auto; box-shadow: 0 8px 24px var(--accent-glow);">
+                        {{ cliente.nombre|first|upper }}
+                    </div>
+                    <h5 class="mt-3 fw-bold mb-0">{{ cliente.nombre }}</h5>
+                    <small style="color: var(--text-muted);">ID #{{ cliente.id }}</small>
+                </div>
+
+                <div class="d-flex flex-column gap-3">
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                        <div style="font-size:0.7rem; color: var(--text-muted); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Correo</div>
+                        <div style="margin-top:4px;">{{ cliente.correo }}</div>
+                    </div>
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                        <div style="font-size:0.7rem; color: var(--text-muted); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Teléfono</div>
+                        <div style="margin-top:4px;">{{ cliente.telefono }}</div>
+                    </div>
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                        <div style="font-size:0.7rem; color: var(--text-muted); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Dirección</div>
+                        <div style="margin-top:4px;">{{ cliente.direccion }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem; color: var(--text-muted); font-weight:700; letter-spacing:1px; text-transform:uppercase;">Registrado</div>
+                        <div style="margin-top:4px;">{{ cliente.creado_en|date:"d/m/Y" }}</div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <a href="{% url 'cliente_update' cliente.pk %}" class="btn btn-primary-custom flex-grow-1" style="font-size:0.82rem;">
+                        <i class="bi bi-pencil-fill me-1"></i>Editar
+                    </a>
+                    <form id="form-del-cliente" method="post" action="{% url 'cliente_delete' cliente.pk %}">
+                        {% csrf_token %}
+                        <button type="button" class="btn btn-sm" style="background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.4); color:#e74c3c; border-radius:10px; padding: 8px 14px;"
+                            onclick="confirmarEliminar('form-del-cliente', '{{ cliente.nombre }}')">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PEDIDOS DEL CLIENTE -->
+    <div class="col-md-8">
+        <div class="card-glass">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-cart3" style="color: var(--accent);"></i>
+                    <h6 class="mb-0 fw-bold">Pedidos del Cliente ({{ pedidos.count }})</h6>
+                </div>
+                <a href="{% url 'pedido_create' %}" class="btn btn-sm btn-primary-custom" style="font-size:0.75rem;">
+                    <i class="bi bi-plus-lg me-1"></i>Nuevo Pedido
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th># Pedido</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Total</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pedido in pedidos %}
+                            <tr>
+                                <td><strong style="color: var(--accent);">#{{ pedido.id }}</strong></td>
+                                <td>{{ pedido.fecha }}</td>
+                                <td><span class="badge-estado badge-{{ pedido.estado }}">{{ pedido.estado }}</span></td>
+                                <td style="font-weight:600; color: #27ae60;">${{ pedido.total|floatformat:2 }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'pedido_detail' pedido.pk %}" class="btn-action btn-view">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4" style="color: var(--text-muted);">
+                                    <i class="bi bi-cart-x" style="font-size:2rem; display:block; margin-bottom:8px; opacity:0.4;"></i>
+                                    Este cliente no tiene pedidos aún.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

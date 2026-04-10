@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+{% block page_subtitle %}Formulario de cliente{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <!-- Migas de pan (Breadcrumb) -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'cliente_list' %}">Clientes</a></li>
+                <li class="breadcrumb-item active">{{ accion }}</li>
+            </ol>
+        </nav>
+
+        <div class="card-glass">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-person-fill" style="color: var(--accent);"></i>
+                <h5 class="mb-0 fw-bold">{{ titulo }}</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <!-- Nombre -->
+                        <div class="col-12">
+                            <label class="form-label">
+                                <i class="bi bi-person me-1"></i>Nombre completo *
+                            </label>
+                            {{ form.nombre }}
+                            {% if form.nombre.errors %}
+                            <div class="text-danger mt-1" style="font-size:0.78rem;">
+                                {% for e in form.nombre.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ e }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <!-- Correo -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="bi bi-envelope me-1"></i>Correo electrónico *
+                            </label>
+                            {{ form.correo }}
+                            {% if form.correo.errors %}
+                            <div class="text-danger mt-1" style="font-size:0.78rem;">
+                                {% for e in form.correo.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ e }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <!-- Teléfono -->
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="bi bi-telephone me-1"></i>Teléfono *
+                            </label>
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                            <div class="text-danger mt-1" style="font-size:0.78rem;">
+                                {% for e in form.telefono.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ e }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <!-- Dirección -->
+                        <div class="col-12">
+                            <label class="form-label">
+                                <i class="bi bi-geo-alt me-1"></i>Dirección *
+                            </label>
+                            {{ form.direccion }}
+                            {% if form.direccion.errors %}
+                            <div class="text-danger mt-1" style="font-size:0.78rem;">
+                                {% for e in form.direccion.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ e }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Errores generales del formulario -->
+                        {% if form.non_field_errors %}
+                        <div class="col-12">
+                            <div class="alert" style="background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.4); border-radius: 10px; color: #e74c3c; font-size:0.85rem; padding: 10px 14px;">
+                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Botones -->
+                        <div class="col-12 d-flex gap-2 justify-content-end mt-2">
+                            <a href="{% url 'cliente_list' %}" class="btn btn-sm" style="background: rgba(255,255,255,0.07); border: 1px solid var(--border-color); color: var(--text-muted); border-radius:10px; padding: 8px 18px;">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary-custom">
+                                <i class="bi bi-{% if accion == 'Crear' %}check-circle{% else %}save{% endif %}-fill me-1"></i>
+                                {{ accion }} Cliente
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
