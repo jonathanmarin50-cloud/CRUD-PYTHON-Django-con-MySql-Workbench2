@@ -5,6 +5,16 @@ las aplicaciones instaladas y el idioma del sitio.
 """
 
 from pathlib import Path
+import os
+
+# Intentar cargar variables de entorno de forma segura
+try:
+    from dotenv import load_dotenv
+    import dj_database_url
+    load_dotenv()
+    HAS_ENV_LIBS = True
+except ImportError:
+    HAS_ENV_LIBS = False
 
 # BASE_DIR: Indica la carpeta raíz donde está guardado todo tu proyecto.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -64,19 +74,38 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 
 
 # ============================================================
-#  CONEXIÓN A LA BASE DE DATOS (MySQL)
+#  CONEXIÓN A LA BASE DE DATOS (Supabase / Local)
 # ============================================================
-# Cambiamos de SQLite a MySQL para tener un sistema profesional.
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bd_pedidos',         # Nombre del esquema en MySQL Workbench
-        'USER': 'root',               # Usuario de tu servidor local
-        'PASSWORD': 'Jonathan1128',    # Tu contraseña personal de MySQL
-        'HOST': 'localhost',           # Dirección del servidor (Tu PC)
-        'PORT': '3306',                # Puerto estándar de MySQL
+if HAS_ENV_LIBS:
+    # Intentamos usar la URL completa (RECOMENDADO para Supabase/Producción)
+    # Si no existe, usamos los parámetros individuales.
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+
+    # Si la configuración anterior falla (DATABASE_URL no definida), usamos el formato clásico
+    if not DATABASES['default']:
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'bd_pedidos'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+else:
+    # CONFIGURACIÓN DE EMERGENCIA / LOCAL (Si faltan librerías)
+    # Usamos SQLite por defecto para evitar que el servidor se apague.
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # ============================================================
@@ -135,9 +164,9 @@ MESSAGE_TAGS = {
 # ============================================================
 #  CONFIGURACIÓN DE SEGURIDAD (LOGIN)
 # ============================================================
-LOGIN_URL = 'login'              # A dónde enviar si no han iniciado sesión
-LOGIN_REDIRECT_URL = 'dashboard' # A dónde ir después de entrar con usuario/clave
-LOGOUT_REDIRECT_URL = 'login'    # A dónde ir al cerrar sesión
+LOGIN_URL = '/cuentas/login/'              # Ruta exacta del login
+LOGIN_REDIRECT_URL = 'dashboard'           # A dónde ir después de entrar
+LOGOUT_REDIRECT_URL = '/cuentas/login/'    # A dónde ir al cerrar sesión
 
 # ============================================================
 #  CONFIGURACIÓN DE SESIONES (TIEMPO DE EXPIRACIÓN)
