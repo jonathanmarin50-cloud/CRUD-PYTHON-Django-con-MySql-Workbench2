@@ -19,12 +19,11 @@ except ImportError:
 # BASE_DIR: Indica la carpeta raíz donde está guardado todo tu proyecto.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECRET_KEY: Clave de seguridad única para este proyecto (No compartir en producción).
-SECRET_KEY = 'django-insecure-pedidos-crud-secret-key-2024'
+# SECRET_KEY: Clave de seguridad única para este proyecto
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-pedidos-crud-secret-key-2024')
 
-# DEBUG: Si es True, Django muestra errores detallados con fondo amarillo.
-# Útil solo mientras estamos programando.
-DEBUG = True
+# DEBUG: En producción (Render) debe ser False.
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*'] # Se recomienda ajustarlo luego a tu dominio de Render
 
