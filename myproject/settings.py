@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-pedidos-crud-secret-key-2024'
 # Útil solo mientras estamos programando.
 DEBUG = True
 
-ALLOWED_HOSTS = ['*'] # Permite entrar al sitio desde cualquier dirección.
+ALLOWED_HOSTS = ['*'] # Se recomienda ajustarlo luego a tu dominio de Render
 
 
 # ============================================================
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # ⭐ Manejo eficiente de archivos estáticos
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -122,6 +123,10 @@ USE_TZ = True
 # ============================================================
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles' # ⭐ Carpeta donde se recolectan los estáticos para producción
+
+# Optimización de Whitenoise para mejorar el rendimiento
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
