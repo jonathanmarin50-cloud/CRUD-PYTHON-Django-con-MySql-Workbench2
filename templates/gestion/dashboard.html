@@ -49,64 +49,6 @@
     </div>
 </div>
 
-<!-- ACCESOS RÁPIDOS MÁS SENCILLOS -->
-<div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-white border-bottom py-3">
-        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-lightning-fill text-warning me-2"></i>Accesos Rápidos</h6>
-    </div>
-    <div class="card-body">
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'pedido_create' %}" class="btn btn-outline-primary"><i class="bi bi-cart-plus me-1"></i>Nuevo Pedido</a>
-            <a href="{% url 'cliente_create' %}" class="btn btn-outline-secondary"><i class="bi bi-person-plus me-1"></i>Nuevo Cliente</a>
-            <a href="{% url 'producto_create' %}" class="btn btn-outline-secondary"><i class="bi bi-box-seam me-1"></i>Nuevo Producto</a>
-            <a href="{% url 'export_pedidos_pdf' %}" target="_blank" class="btn btn-outline-danger"><i class="bi bi-file-pdf me-1"></i>Reporte PDF</a>
-        </div>
-    </div>
 </div>
-
-<!-- ÚLTIMOS PEDIDOS -->
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-clock-history text-muted me-2"></i>Últimos 5 Pedidos</h6>
-        <a href="{% url 'pedido_list' %}" class="text-decoration-none small">Ver todos los pedidos &rarr;</a>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-4"># Pedido</th>
-                        <th>Cliente</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th class="text-end pe-4">Ver</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for pedido in ultimos_pedidos %}
-                    <tr>
-                        <td class="ps-4 fw-bold text-primary">#{{ pedido.id }}</td>
-                        <td>{{ pedido.cliente.nombre }}</td>
-                        <td>{{ pedido.fecha }}</td>
-                        <td><span class="badge-estado badge-{{ pedido.estado }}">{{ pedido.estado }}</span></td>
-                        <td class="text-end pe-4">
-                            <a href="{% url 'pedido_detail' pedido.pk %}" class="btn btn-sm btn-light border" title="Ver pedido">
-                                <i class="bi bi-eye-fill"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox text-light fs-1 mb-2 d-block"></i>
-                            <p class="mb-0">Aún no tienes pedidos registrados.</p>
-                            <a href="{% url 'pedido_create' %}" class="btn btn-primary mt-3">Crear el primero</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+{% endblock %}
 {% endblock %}
