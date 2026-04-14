@@ -311,93 +311,98 @@ def export_productos_excel(request):
     wb.save(response)
     return response
 
+# Función auxiliar global para limpiar texto de caracteres no soportados por fuentes estándar (latin-1)
+def clean_pdf_text(text):
+    if not text: return ""
+    return str(text).encode('latin-1', 'replace').decode('latin-1')
+
 # --- Clase personalizada para PDF Premium ---
 class PDFReporte(FPDF):
     def header(self):
-        # Logo o Título Estilizado
         self.set_font("helvetica", "B", 15)
-        self.set_text_color(33, 37, 41) # Gris oscuro
-        self.cell(0, 10, "SISTEMA DE GESTIÓN DE PEDIDOS", ln=True, align="C")
+        self.set_text_color(33, 37, 41) 
+        # Limpiamos el título para evitar errores con la 'Ó'
+        titulo = clean_pdf_text("SISTEMA DE GESTION DE PEDIDOS")
+        self.cell(0, 10, titulo, ln=True, align="C")
         self.set_font("helvetica", "I", 10)
-        self.cell(0, 10, f"Reporte Generado el: {date.today().strftime('%d/%m/%Y')}", ln=True, align="C")
+        info = clean_pdf_text(f"Reporte Generado el: {date.today().strftime('%d/%m/%Y')}")
+        self.cell(0, 10, info, ln=True, align="C")
         self.ln(5)
 
     def footer(self):
         self.set_y(-15)
         self.set_font("helvetica", "I", 8)
         self.set_text_color(128)
-        self.cell(0, 10, f"Página {self.page_no()}/{{nb}}", align="C")
+        pie = clean_pdf_text(f"Pagina {self.page_no()}/{{nb}}")
+        self.cell(0, 10, pie, align="C")
 
 @login_required
 def export_pedidos_pdf(request):
     """Exportar pedidos a PDF con diseño profesional y corregido."""
-    # Obtenemos los datos (incluyendo cliente para el reporte)
-    pedidos = Pedido.objects.select_related('cliente').all()
-    
-    # Configuramos el PDF (UTF-8 activado si es necesario, aunque fpdf2 lo maneja)
-    pdf = PDFReporte()
-    pdf.alias_nb_pages()
-    pdf.add_page()
-    
-    # Título de la tabla
-    pdf.set_font("helvetica", "B", 14)
-    pdf.set_fill_color(52, 58, 64) # Fondo oscuro (RGB: #343a40)
-    pdf.set_text_color(255, 255, 255) # Texto blanco
-    pdf.cell(190, 10, " LISTADO GENERAL DE PEDIDOS", ln=True, align="L", fill=True)
-    pdf.ln(2)
+    try:
+        pedidos = Pedido.objects.select_related('cliente').all()
+        
+        pdf = PDFReporte()
+        pdf.alias_nb_pages()
+        pdf.add_page()
+        
+        # Título de la tabla
+        pdf.set_font("helvetica", "B", 14)
+        pdf.set_fill_color(52, 58, 64) 
+        pdf.set_text_color(255, 255, 255) 
+        pdf.cell(190, 10, clean_pdf_text(" LISTADO GENERAL DE PEDIDOS"), ln=True, align="L", fill=True)
+        pdf.ln(2)
 
-    # Cabecera de la tabla
-    pdf.set_font("helvetica", "B", 10)
-    pdf.set_fill_color(248, 249, 250) # Gris muy claro
-    pdf.set_text_color(0)
-    
-    # Definición de anchos de columna: Total 190mm
-    # ID(15), Cliente(85), Fecha(30), Estado(30), Total(30)
-    pdf.cell(15, 8, "ID", border=1, align="C", fill=True)
-    pdf.cell(85, 8, "Cliente", border=1, align="C", fill=True)
-    pdf.cell(30, 8, "Fecha", border=1, align="C", fill=True)
-    pdf.cell(30, 8, "Estado", border=1, align="C", fill=True)
-    pdf.cell(30, 8, "Total", border=1, align="C", fill=True)
-    pdf.ln()
+        # Cabecera de la tabla
+        pdf.set_font("helvetica", "B", 10)
+        pdf.set_fill_color(248, 249, 250) 
+        pdf.set_text_color(0)
+        
+        pdf.cell(15, 8, "ID", border=1, align="C", fill=True)
+        pdf.cell(85, 8, "Cliente", border=1, align="C", fill=True)
+        pdf.cell(30, 8, "Fecha", border=1, align="C", fill=True)
+        pdf.cell(30, 8, "Estado", border=1, align="C", fill=True)
+        pdf.cell(30, 8, "Total", border=1, align="C", fill=True)
+        pdf.ln()
 
-    # Cuerpo de la tabla
-    pdf.set_font("helvetica", "", 9)
-    total_general = 0
-    
-    if not pedidos:
-        pdf.cell(0, 10, "No hay pedidos registrados.", border=1, ln=True, align="C")
-    else:
-        for p in pedidos:
-            # Color alterno para filas (cebrado)
-            fill = (pdf.page_no() % 2 == 0) # Ejemplo simple de cebrado
-            t = p.total()
-            total_general += t
-            
-            pdf.cell(15, 7, f"{p.id}", border=1, align="C")
-            # Truncamos nombre si es muy largo
-            nombre_cliente = (p.cliente.nombre[:40] + '..') if len(p.cliente.nombre) > 40 else p.cliente.nombre
-            pdf.cell(85, 7, f" {nombre_cliente}", border=1)
-            pdf.cell(30, 7, f"{p.fecha.strftime('%d/%m/%Y')}", border=1, align="C")
-            pdf.cell(30, 7, f"{p.estado}", border=1, align="C")
-            pdf.cell(30, 7, f"${t:,.2f}", border=1, align="R")
-            pdf.ln()
+        # Cuerpo de la tabla
+        pdf.set_font("helvetica", "", 9)
+        total_general = 0
+        
+        if not pedidos.exists():
+            pdf.cell(190, 10, clean_pdf_text("No hay pedidos registrados."), border=1, ln=True, align="C")
+        else:
+            for p in pedidos:
+                t = p.total()
+                total_general += t
+                
+                pdf.cell(15, 7, f"{p.id}", border=1, align="C")
+                
+                nombre = clean_pdf_text(p.cliente.nombre)
+                nombre_display = (nombre[:40] + '..') if len(nombre) > 40 else nombre
+                
+                pdf.cell(85, 7, f" {nombre_display}", border=1)
+                pdf.cell(30, 7, f"{p.fecha.strftime('%d/%m/%Y')}", border=1, align="C")
+                pdf.cell(30, 7, clean_pdf_text(p.estado), border=1, align="C")
+                pdf.cell(30, 7, f"${t:,.2f}", border=1, align="R")
+                pdf.ln()
 
-    # Fila de Resumen
-    pdf.set_font("helvetica", "B", 10)
-    pdf.set_fill_color(233, 236, 239)
-    pdf.cell(160, 8, "TOTAL VENTAS ACUMULADAS", border=1, align="R", fill=True)
-    pdf.cell(30, 8, f"${total_general:,.2f}", border=1, align="R", fill=True)
+        # Fila de Resumen
+        pdf.set_font("helvetica", "B", 10)
+        pdf.set_fill_color(233, 236, 239)
+        pdf.cell(160, 8, clean_pdf_text("TOTAL VENTAS ACUMULADAS"), border=1, align="R", fill=True)
+        pdf.cell(30, 8, f"${total_general:,.2f}", border=1, align="R", fill=True)
 
-    # --- CORRECCIÓN DE CORRUPCIÓN ---
-    # Obtenemos el contenido del PDF como bytes
-    pdf_content = pdf.output()
-    
-    # Creamos la respuesta con los encabezados correctos de longitud y tipo
-    response = HttpResponse(pdf_content, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="reporte_pedidos.pdf"'
-    response['Content-Length'] = len(pdf_content)
-    
-    return response
+        # Entrega de datos binarios
+        pdf_bytes = bytes(pdf.output())
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="reporte_pedidos.pdf"'
+        response['Content-Length'] = len(pdf_bytes)
+        return response
+
+    except Exception as e:
+        # Si falla, devolvemos el error como texto para saber qué pasó exactamente
+        return HttpResponse(f"Error critico al generar PDF: {str(e)}", content_type="text/plain", status=500)
 
 from django.contrib.auth.forms import UserCreationForm
 def registro_usuario(request):
