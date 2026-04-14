@@ -175,8 +175,8 @@ LOGOUT_REDIRECT_URL = '/cuentas/login/'    # A dónde ir al cerrar sesión
 # ============================================================
 #  CONFIGURACIÓN DE SESIONES (TIEMPO DE EXPIRACIÓN)
 # ============================================================
-# El tiempo se mide en segundos. 30 segundos = 30 segundos.
-SESSION_COOKIE_AGE = 30
+# El tiempo se mide en segundos. 600 segundos = 10 minutos.
+SESSION_COOKIE_AGE = 600
 
 # Si se pone en True, la sesión se cierra al cerrar el navegador.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
